@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Design — Reference Sheets</title>
+<style>
+  :root{
+    --ink:#15202B;
+    --navy:#0F2A44;
+    --navy-2:#123655;
+    --blue:#2E6E9E;
+    --blue-line: rgba(120,170,205,0.35);
+    --paper:#F5F7F4;
+    --paper-line: rgba(46,110,158,0.14);
+    --amber:#E2841E;
+    --amber-dim: rgba(226,132,30,0.14);
+    --muted:#5C6B78;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:var(--navy);
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:280px;
+    flex-shrink:0;
+    background:
+      linear-gradient(var(--navy),var(--navy)),
+      repeating-linear-gradient(0deg, var(--blue-line) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, var(--blue-line) 0 1px, transparent 1px 28px);
+    color:#DCE7F0;
+    padding:28px 0 20px;
+    display:flex;
+    flex-direction:column;
+    border-right:2px solid var(--amber);
+  }
+  .brand{
+    padding:0 22px 20px;
+    border-bottom:1px solid rgba(220,231,240,0.18);
+    margin-bottom:10px;
+  }
+  .brand .kicker{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:2px;
+    color:var(--amber);
+    text-transform:uppercase;
+  }
+  .brand h1{
+    font-size:21px;
+    margin:6px 0 2px;
+    font-weight:700;
+    letter-spacing:0.3px;
+  }
+  .brand p{
+    margin:0;
+    font-size:12px;
+    color:#9FB4C5;
+    font-family:var(--mono);
+  }
+
+  .tab-list{
+    list-style:none;
+    margin:0;
+    padding:6px 12px;
+    overflow-y:auto;
+  }
+  .tab-list li{margin-bottom:3px;}
+  .tab-btn{
+    width:100%;
+    text-align:left;
+    background:transparent;
+    border:1px solid transparent;
+    color:#C7D6E2;
+    padding:10px 12px;
+    border-radius:4px;
+    cursor:pointer;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    font-size:14.5px;
+    font-family:var(--sans);
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .tab-btn .sheet-no{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--amber);
+    flex-shrink:0;
+    width:38px;
+  }
+  .tab-btn:hover{
+    background:rgba(226,132,30,0.08);
+    border-color:rgba(226,132,30,0.25);
+  }
+  .tab-btn.active{
+    background:rgba(226,132,30,0.14);
+    border-color:var(--amber);
+    color:#fff;
+    font-weight:600;
+  }
+
+  /* ---------- Main / Sheet ---------- */
+  main{
+    flex:1;
+    background:
+      var(--paper)
+      repeating-linear-gradient(0deg, var(--paper-line) 0 1px, transparent 1px 32px),
+      repeating-linear-gradient(90deg, var(--paper-line) 0 1px, transparent 1px 32px);
+    overflow-y:auto;
+    padding:36px 44px 60px;
+  }
+
+  .titleblock{
+    border:2px solid var(--navy);
+    background:#fff;
+    display:grid;
+    grid-template-columns: 1fr auto auto;
+    margin-bottom:30px;
+  }
+  .titleblock .tb-main{
+    padding:16px 20px;
+    border-right:1px solid var(--navy);
+  }
+  .titleblock .tb-main .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:1.5px;
+    color:var(--blue);
+    text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  .titleblock .tb-main h2{
+    margin:0;
+    font-size:30px;
+    line-height:1.15;
+    color:var(--navy);
+  }
+  .titleblock .tb-cell{
+    padding:16px 20px;
+    border-right:1px solid var(--navy);
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:2px;
+    min-width:110px;
+  }
+  .titleblock .tb-cell:last-child{border-right:none;}
+  .titleblock .tb-cell b{
+    color:var(--ink);
+    font-size:13px;
+  }
+
+  section.panel{display:none;}
+  section.panel.active{display:block;}
+
+  .block{
+    background:#fff;
+    border:1px solid rgba(15,42,68,0.15);
+    border-left:4px solid var(--blue);
+    padding:20px 24px;
+    margin-bottom:22px;
+  }
+  .block h3{
+    margin:0 0 12px;
+    font-size:13px;
+    letter-spacing:1.2px;
+    text-transform:uppercase;
+    font-family:var(--mono);
+    color:var(--navy);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .block h3::before{
+    content:"";
+    width:8px;height:8px;
+    background:var(--amber);
+    display:inline-block;
+    transform:rotate(45deg);
+  }
+  .block p{margin:0 0 10px;line-height:1.55;font-size:15px;}
+  .block ul{margin:0;padding-left:20px;}
+  .block li{margin-bottom:7px;line-height:1.5;font-size:15px;}
+
+  .qa{border-bottom:1px dashed rgba(15,42,68,0.2);padding:16px 0;}
+  .qa:first-of-type{padding-top:2px;}
+  .qa:last-of-type{border-bottom:none;padding-bottom:0;}
+  .qa .q{
+    font-weight:700;
+    color:var(--navy);
+    margin-bottom:6px;
+    display:flex;
+    gap:8px;
+  }
+  .qa .q .tag{
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:#fff;
+    background:var(--navy);
+    padding:2px 6px;
+    border-radius:3px;
+    flex-shrink:0;
+    height:fit-content;
+    margin-top:3px;
+  }
+  .qa .a{
+    font-size:14.5px;
+    line-height:1.55;
+    color:#28323B;
+    padding-left:44px;
+    position:relative;
+  }
+  .qa .a::before{
+    content:"A";
+    position:absolute;
+    left:0;
+    top:0;
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:#fff;
+    background:var(--amber);
+    padding:2px 7px;
+    border-radius:3px;
+  }
+
+  footer.note{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    text-align:center;
+    padding-top:10px;
+  }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 860px){
+    body{flex-direction:column;}
+    .sidebar{
+      width:100%;
+      border-right:none;
+      border-bottom:2px solid var(--amber);
+      padding:16px 0;
+    }
+    .brand{padding:0 16px 14px;margin-bottom:8px;}
+    .tab-list{
+      display:flex;
+      overflow-x:auto;
+      padding:4px 12px 8px;
+      gap:6px;
+    }
+    .tab-list li{margin-bottom:0;flex-shrink:0;}
+    .tab-btn{white-space:nowrap;}
+    main{padding:22px 16px 40px;}
+    .titleblock{grid-template-columns:1fr;}
+    .titleblock .tb-main,.titleblock .tb-cell{border-right:none;border-bottom:1px solid var(--navy);}
+    .titleblock .tb-main h2{font-size:24px;}
+    .qa .a{padding-left:0;margin-top:6px;}
+    .qa .a::before{position:static;display:inline-block;margin-bottom:6px;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="brand">
+    <div class="kicker">Reference Set / Rev. 2026</div>
+    <h1>System Design</h1>
+    <p>10 sheets — interview refresher</p>
+  </div>
+  <ul class="tab-list" id="tabList"></ul>
+</nav>
+
+<main id="mainArea">
+  <!-- panels injected by JS -->
+</main>
+
+<script>
+const TOPICS = [
+  {
+    title: "CAP Theorem",
+    overview: "In a distributed system, when a network partition occurs, you must choose between Consistency and Availability — Partition tolerance isn't optional for any real distributed system, so CAP is really a C-vs-A decision during partitions.",
+    concepts: [
+      "CP systems: reject/delay requests during a partition to protect correctness.",
+      "AP systems: keep responding during a partition, at the risk of returning stale data.",
+      "Partition tolerance is assumed as a baseline for any distributed system.",
+      "PACELC extends CAP: even without a partition, systems trade Latency vs Consistency."
+    ],
+    qas: [
+      ["You're told 'we need perfect consistency and 100% availability, always.' How do you respond?",
+        "Explain that per CAP theorem this isn't achievable during a network partition — one must be prioritized based on business needs. Financial ledgers typically lean CP; social feeds typically lean AP."],
+      ["Your payment ledger must never show an incorrect balance, even mid-partition. What category fits, and what does the business give up?",
+        "A CP system — it may reject or delay requests during a partition rather than risk an incorrect balance. The trade-off is reduced availability during rare partition events, accepted for correctness."],
+      ["A 'like' counter sometimes shows a slightly outdated number. Why might that be a deliberate design choice?",
+        "It's likely an AP system prioritizing availability and responsiveness. Eventual consistency is acceptable here because a stale count has low business impact, and users prefer the feature staying responsive over occasional unavailability."],
+      ["How does PACELC matter even when there's no partition happening?",
+        "PACELC states that in the normal, non-partitioned case, a system still trades Latency vs Consistency on an ongoing basis — so this isn't just a rare-event decision, it's a routine design trade-off."],
+      ["If requirements aren't clear-cut, how do you design for flexibility between CP and AP?",
+        "Make consistency tunable per operation using a quorum-based approach, so critical paths can lean CP and less critical paths can lean AP within the same system."]
+    ]
+  },
+  {
+    title: "Availability Patterns",
+    overview: "Patterns that keep a system operational and responsive despite failures, typically through redundancy and failover. Availability is usually expressed in 'nines' of uptime, and higher targets get disproportionately more expensive.",
+    concepts: [
+      "Active-active vs active-passive redundancy and failover.",
+      "Health checks to detect and route around failed instances.",
+      "Circuit breakers, timeouts, and retries with backoff.",
+      "Graceful degradation — partial functionality over total failure.",
+      "Multi-region deployment for regional failure isolation."
+    ],
+    qas: [
+      ["What's the core trade-off between active-active and active-passive patterns?",
+        "Active-active gives higher resource utilization and faster failover since all nodes serve traffic, but requires handling data consistency/conflicts across nodes. Active-passive is simpler to reason about, but wastes standby capacity and has a failover delay."],
+      ["A downstream dependency starts timing out intermittently. How do you stop it cascading into a full outage?",
+        "Add a circuit breaker to stop calling the failing dependency past a failure threshold, combine with sane timeouts and bulkheads to isolate resource pools, and provide a fallback so the rest of the system stays available."],
+      ["A recommendation service can't reach its scoring backend. How would you design for graceful degradation?",
+        "Fall back to a simpler method — cached results or popularity-based defaults — instead of failing the page outright, trading some personalization for continued availability."],
+      ["Why isn't 'five nines' the right target for every component in a system?",
+        "Because availability targets get exponentially more expensive as they approach 100%. Architects should set differentiated targets per component based on business criticality, not uniformly over-engineer everything."],
+      ["Beyond duplicating infrastructure, what's a key challenge in multi-region availability?",
+        "Keeping data synchronized across regions and routing failover (e.g., global load balancing) correctly, without introducing split-brain scenarios or significant data divergence."]
+    ]
+  },
+  {
+    title: "CDN",
+    overview: "A Content Delivery Network is a distributed set of edge servers that cache content closer to end users, reducing latency and load on the origin. Primarily suited to static/cacheable content, though modern CDNs also accelerate some dynamic traffic.",
+    concepts: [
+      "Points of presence (PoPs) cache content geographically close to users.",
+      "Origin pull vs origin push caching models.",
+      "TTL controls how long content is cached at the edge.",
+      "Purging/invalidation to force refresh of stale cached content."
+    ],
+    qas: [
+      ["A client asks: 'since we have a CDN, do we still need caching at the app/database layer?'",
+        "Yes — a CDN mainly caches static/cacheable content at the edge. It doesn't replace application or database caching, which reduce load and latency for dynamic, per-request data the CDN generally can't cache."],
+      ["You deploy a fixed CSS file, but users still see the broken version. What's likely happening, and how do you fix it?",
+        "The edge cache is likely still serving the old file since its TTL hasn't expired. Fix by purging/invalidating that asset at the CDN, and use cache-busting (versioned filenames) for future deploys."],
+      ["When would a CDN offer little benefit, or even add unnecessary complexity?",
+        "For highly personalized or rapidly changing, non-cacheable content — such as real-time trading data — a CDN adds limited value and can introduce overhead without a real payoff."],
+      ["How do you balance freshness against cache-hit rate when setting CDN TTLs?",
+        "Longer TTLs improve hit rate and reduce origin load but risk staleness; shorter TTLs keep content fresher but increase origin traffic. Tune per asset type based on how often it changes and how tolerant the business is of staleness."]
+    ]
+  },
+  {
+    title: "Load Balancer",
+    overview: "Distributes incoming traffic across multiple servers to improve availability, scalability, and fault tolerance. Can operate at different layers of the network stack with different routing capabilities.",
+    concepts: [
+      "L4 (transport-layer) vs L7 (application-layer) load balancing.",
+      "Algorithms: round robin, least connections, weighted, hashing.",
+      "Health checks to remove/reinstate backend instances automatically.",
+      "Session persistence ('sticky sessions') and its trade-offs."
+    ],
+    qas: [
+      ["When would you choose an L7 load balancer over an L4 one?",
+        "When routing decisions need application-level data — like URL path, headers, or cookies — for example routing /api and /images differently. L4 is simpler and faster but only sees IP/port-level information."],
+      ["Sticky sessions are making scaling and failover painful. Why, and what's the alternative?",
+        "Sticky sessions bind a client to one server, undermining even load distribution, and a server failure drops that server's active sessions. The alternative is stateless backend servers with session data kept in a shared store, so any server can handle any request."],
+      ["How do health checks and load balancers work together during a partial outage?",
+        "The load balancer periodically checks backend health and automatically removes unhealthy instances from rotation, reinstating them once healthy again — avoiding manual intervention during failures."],
+      ["What's the risk of round-robin load balancing when backend servers have unequal capacity?",
+        "It can overload weaker instances since requests are distributed evenly regardless of capacity. A weighted or least-connections algorithm better accounts for differing server capacity or load."]
+    ]
+  },
+  {
+    title: "Reverse Proxy",
+    overview: "Sits in front of backend servers, forwarding client requests and returning responses while hiding backend topology. Frequently combined with load balancing, SSL termination, and caching.",
+    concepts: [
+      "Hides internal architecture from clients.",
+      "SSL/TLS termination in one centralized place.",
+      "Can add caching, compression, and cross-cutting concerns.",
+      "Distinct from a forward proxy, which represents clients rather than servers."
+    ],
+    qas: [
+      ["What's the difference between a forward proxy and a reverse proxy, and why does it matter architecturally?",
+        "A forward proxy acts on behalf of clients (e.g., hiding client identity, filtering outbound traffic); a reverse proxy acts on behalf of servers (hiding backend topology, distributing inbound requests). The distinction determines where it sits in the network and what concerns it should handle."],
+      ["Why terminate SSL/TLS at the reverse proxy instead of on each backend server?",
+        "It centralizes certificate management and reduces CPU overhead per backend, but traffic between the proxy and backend is then often unencrypted internally — a trade-off between convenience and needing to secure the internal network appropriately."],
+      ["What operational benefits does a reverse proxy bring beyond routing, in a microservices setup?",
+        "It can centralize cross-cutting concerns like authentication, rate limiting, compression, and caching, keeping them out of individual services."],
+      ["What's the risk of putting too much business logic into the reverse proxy layer?",
+        "It becomes a complex, tightly coupled component and a potential bottleneck or single point of failure. The proxy is better suited to infrastructure-level concerns; business logic belongs in the services themselves."]
+    ]
+  },
+  {
+    title: "Caching",
+    overview: "Storing frequently accessed data in a faster-access layer to reduce latency and load on the primary data store. Applicable at multiple layers of a system, from browser to CDN to application to database.",
+    concepts: [
+      "Cache-aside, write-through, and write-behind strategies.",
+      "Eviction policies such as LRU and LFU.",
+      "Local (in-process) cache vs distributed cache.",
+      "Cache stampede (thundering herd) as a common failure mode."
+    ],
+    qas: [
+      ["What's the fundamental trade-off you accept whenever you introduce caching?",
+        "You trade some data freshness/consistency for lower latency and reduced load on the source of truth. Cached data can become stale, so you need an invalidation or expiration strategy suited to how much staleness the system can tolerate."],
+      ["Compare write-through and write-behind caching — when would you choose each?",
+        "Write-through writes to cache and the store synchronously, giving strong consistency at the cost of higher write latency. Write-behind writes to cache first and to the store asynchronously, giving lower latency but risking data loss if the cache fails before the write persists. Choose write-through when durability matters most, write-behind when write throughput matters more and some risk is acceptable."],
+      ["A popular cache key just expired and requests are spiking the database simultaneously. What's this called, and how do you mitigate it?",
+        "This is a cache stampede. Mitigations include a lock so only one request repopulates the cache while others wait, staggering expirations with jitter, or serving slightly stale data while refreshing in the background."],
+      ["How would you decide between a local and a distributed cache for a service?",
+        "Local caches are fastest but don't share state across instances, leading to inconsistent behavior between replicas. A distributed cache gives a shared, consistent view across instances at the cost of network latency and added infrastructure — choose based on whether cross-replica consistency matters."],
+      ["What's a key consideration when deciding what NOT to cache?",
+        "Data that changes faster than any reasonable TTL, or where staleness carries real risk — such as real-time financial balances — may be poor caching candidates, or need very short TTLs with careful invalidation."]
+    ]
+  },
+  {
+    title: "TCP / UDP / RPC / REST",
+    overview: "These describe how services and clients exchange data — TCP and UDP at the transport layer, RPC and REST as higher-level communication styles built on top of transport protocols (typically TCP).",
+    concepts: [
+      "TCP: connection-oriented, reliable, ordered delivery.",
+      "UDP: connectionless, lower overhead, no delivery guarantee.",
+      "RPC: action-oriented remote calls, often used internally between services.",
+      "REST: resource-oriented, uses HTTP verbs, typically stateless."
+    ],
+    qas: [
+      ["When would you choose UDP over TCP, given it doesn't guarantee delivery?",
+        "For latency-sensitive cases where occasional loss is acceptable and retransmission would hurt more than a missed packet — like live video/voice or real-time game state — UDP's lower overhead outweighs the reliability trade-off."],
+      ["A team wants to replace internal REST APIs with RPC to cut latency. What's the trade-off?",
+        "RPC can reduce overhead with compact payloads and strongly typed contracts, suiting internal service-to-service calls. REST's textual, resource-oriented style is generally more human-readable, cacheable via HTTP semantics, and easier for broad external consumption. The right choice depends on whether the audience is internal (favoring RPC) or external/broad (favoring REST)."],
+      ["What does it mean for REST to be 'stateless,' and why does it matter for scalability?",
+        "Each request carries all information needed to process it, with no client session stored server-side between requests. This lets any server instance handle any request, which is essential for horizontal scaling without sticky sessions."],
+      ["A sequence of updates needs guaranteed ordered, reliable delivery. Which transport fits, and why?",
+        "TCP — it provides reliable, ordered delivery with error checking and retransmission built in, unlike UDP which offers no such guarantees."]
+    ]
+  },
+  {
+    title: "Database (SQL, NoSQL)",
+    overview: "The choice of data store shapes how data is structured, queried, and scaled. SQL (relational) and NoSQL (non-relational) represent different trade-offs suited to different data shapes and access patterns.",
+    concepts: [
+      "SQL: defined schema, ACID transactions, joins across normalized tables.",
+      "NoSQL types: key-value, document, column-family, graph.",
+      "Many NoSQL systems favor BASE/eventual consistency over strict ACID.",
+      "Polyglot persistence — using multiple database types in one system."
+    ],
+    qas: [
+      ["A team wants to choose between SQL and NoSQL for a new service. What would you ask first?",
+        "How structured/stable the data schema is, whether complex queries or multi-table transactions are needed (favoring SQL), versus whether horizontal scale and flexible schema with simpler access patterns matter more (favoring NoSQL), plus the required consistency guarantees."],
+      ["Why is horizontal scaling traditionally harder with relational databases than many NoSQL databases?",
+        "Relational databases are built around strong consistency, joins, and transactions across normalized tables, which get complex to maintain once sharded across nodes. Many NoSQL databases are designed from the start for partitioning data with simpler access patterns, making horizontal scaling more natural."],
+      ["When might a system reasonably use both SQL and NoSQL together?",
+        "When different parts of the system have different needs — e.g., a relational database for core transactional data needing strong consistency, and a NoSQL store for high-volume, simpler data like sessions, logs, or catalogs. This polyglot persistence approach is common."],
+      ["What does 'eventual consistency' mean in many NoSQL systems, and what can tolerate it?",
+        "After a write, replicas converge to the same value over time, but a read shortly after may return stale data. Use cases like social feeds or view counters typically tolerate this brief staleness in exchange for availability and performance."],
+      ["A relational table shows high write contention. What are architectural options beyond a bigger server?",
+        "Sharding the table by a key, denormalizing to reduce contention, queueing writes to serialize/batch them, or offloading some data to a store better suited to the write pattern — the right mix depends on the actual read/write pattern and consistency needs."]
+    ]
+  },
+  {
+    title: "Consistency Patterns",
+    overview: "Different guarantees a distributed system can offer about when and how updates become visible to readers across replicas or nodes, ranging from strict to relaxed.",
+    concepts: [
+      "Strong consistency vs eventual consistency.",
+      "Causal consistency — preserving order of related operations.",
+      "Read-your-writes consistency.",
+      "Quorum-based consistency using N (replicas), W (write acks), R (read responses)."
+    ],
+    qas: [
+      ["Explain strong vs eventual consistency to a non-technical stakeholder, using a business example.",
+        "Strong consistency means once an update is made, everyone sees the same latest value immediately, usually at some cost to latency or availability. Eventual consistency means updates spread over time, so different users might briefly see slightly different values while the system stays fast and available. A bank balance likely needs strong consistency; a view counter is fine with eventual consistency."],
+      ["What is a quorum-based (N/W/R) approach, and why would an architect tune it?",
+        "N is the number of replicas, W is how many must acknowledge a write, R is how many must respond to a read. Tuning W and R relative to N trades off consistency, availability, and latency — generally, W + R > N tends toward strongly consistent reads, while lower thresholds favor availability and speed at the risk of stale reads."],
+      ["A user updates their profile picture but sometimes still sees the old one right after saving. What's missing, and how do you fix it?",
+        "This points to a missing read-your-writes guarantee. Address it by routing that user's subsequent reads to the replica that received the write, or by using session-based consistency tokens so a client always sees its own prior writes."],
+      ["Why might a system choose causal consistency instead of full strong consistency?",
+        "Causal consistency preserves the order of related operations for all readers without requiring the more expensive guarantee that all operations globally appear in the same order to everyone. It's often 'consistent enough' for cases like comment threads or chat, at much lower coordination cost."]
+    ]
+  },
+  {
+    title: "Scalability & Performance",
+    overview: "Scalability is how well a system handles growing load by adding resources; performance is how fast or efficiently it handles a given load. The two overlap but are distinct problems that call for different fixes.",
+    concepts: [
+      "Vertical scaling (bigger machine) vs horizontal scaling (more machines).",
+      "Statelessness as a precondition for horizontal scaling.",
+      "Sharding/partitioning to scale data layers.",
+      "Asynchronous processing and queues to absorb load spikes."
+    ],
+    qas: [
+      ["What's the difference between scaling a system and improving its performance, and why does it matter?",
+        "Performance is about how fast a system handles a given load; scalability is about how well it handles growing load by adding resources. A system can be fast at low load but not scale, or scale well while individual requests stay relatively slow — an architect needs to know which problem is actually being solved."],
+      ["Someone suggests 'just add a bigger server' under load. What are the limits, and what's the alternative?",
+        "Vertical scaling has a hard ceiling — there's a maximum practical machine size — and often remains a single point of failure. Horizontal scaling avoids that ceiling and improves fault tolerance, but requires the service to be stateless so instances are interchangeable."],
+      ["How do asynchronous processing and queues help scalability, and what do they cost?",
+        "They decouple request handling from slower or bursty work, letting the system absorb load spikes and process at a sustainable rate, improving perceived performance and resilience. The cost is added architectural complexity and typically weaker consistency, since work completes after the fact rather than within the original request."],
+      ["The application tier is scaled out, but the database is now the bottleneck. What are typical ways to scale the data layer?",
+        "Read replicas for read-heavy workloads, sharding/partitioning to scale writes, caching to reduce database load, and denormalization — the right combination depends on whether reads, writes, or both are the bottleneck."],
+      ["Why can premature optimization for scalability hurt a project?",
+        "Building for scale far beyond current or near-term needs adds unnecessary complexity, cost, and slower iteration. Architects generally balance designing for reasonably anticipated growth against over-engineering for scale that may never be reached."]
+    ]
+  }
+];
+
+const tabList = document.getElementById('tabList');
+const mainArea = document.getElementById('mainArea');
+
+TOPICS.forEach((topic, i) => {
+  const num = String(i+1).padStart(2,'0');
+
+  // sidebar tab
+  const li = document.createElement('li');
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn' + (i===0 ? ' active' : '');
+  btn.dataset.index = i;
+  btn.innerHTML = `<span class="sheet-no">A-${num}</span><span>${topic.title}</span>`;
+  btn.addEventListener('click', () => selectTab(i));
+  li.appendChild(btn);
+  tabList.appendChild(li);
+
+  // panel
+  const section = document.createElement('section');
+  section.className = 'panel' + (i===0 ? ' active' : '');
+  section.id = 'panel-' + i;
+
+  const qaHtml = topic.qas.map((qa, qi) => `
+    <div class="qa">
+      <div class="q"><span class="tag">Q${qi+1}</span><span>${qa[0]}</span></div>
+      <div class="a">${qa[1]}</div>
+    </div>
+  `).join('');
+
+  section.innerHTML = `
+    <div class="titleblock">
+      <div class="tb-main">
+        <div class="eyebrow">System Design Reference</div>
+        <h2>${topic.title}</h2>
+      </div>
+      <div class="tb-cell"><span>Sheet</span><b>A-${num} / 10</b></div>
+      <div class="tb-cell"><span>Scale</span><b>N/A</b></div>
+      <div class="tb-cell"><span>Rev</span><b>2026</b></div>
+    </div>
+
+    <div class="block">
+      <h3>Overview</h3>
+      <p>${topic.overview}</p>
+    </div>
+
+    <div class="block">
+      <h3>Key Concepts</h3>
+      <ul>${topic.concepts.map(c => `<li>${c}</li>`).join('')}</ul>
+    </div>
+
+    <div class="block">
+      <h3>Associate Architect — Interview Q&A</h3>
+      ${qaHtml}
+    </div>
+
+    <footer class="note">— End of Sheet A-${num} —</footer>
+  `;
+  mainArea.appendChild(section);
+});
+
+function selectTab(i){
+  document.querySelectorAll('.tab-btn').forEach((b,idx) => b.classList.toggle('active', idx===i));
+  document.querySelectorAll('.panel').forEach((p,idx) => p.classList.toggle('active', idx===i));
+  mainArea.scrollTop = 0;
+}
+</script>
+
+</body>
+</html>
